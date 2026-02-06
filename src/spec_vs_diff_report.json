@@ -1,0 +1,31 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-03T16:57:10.327Z",
+  "summary": "A new standalone vanilla HTML/CSS/JS demo appears to have been added under frontend/standalone-gst-demo with index.html, style.css, and script.js, including developer-facing run instructions/comments. However, the diff also shows unrelated modifications to repo metadata/summary files describing extensive React app changes that were not requested for this BuildRequest.",
+  "missing_requirements": [],
+  "hallucinated_features": [
+    {
+      "description": "Unrequested modifications to the existing React/Vite application and related frontend features (e.g., RBAC, dashboards, role management, invoice pages, inventory pages, audit log, GST returns page) as described in the modified frontend-file-summaries.txt.",
+      "reason": "The BuildRequest specifically asks to add a standalone vanilla UI in new files without impacting the existing React/Vite app; it does not request feature work or refactors in the React app.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Unrequested update to project_state.json describing new/existing features and summaries beyond adding the standalone demo.",
+      "reason": "The BuildRequest does not ask for project state/metadata updates.",
+      "evidence": [
+        "project_state.json"
+      ]
+    }
+  ],
+  "confidence": 0.68,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/standalone-gst-demo/index.html",
+    "frontend/standalone-gst-demo/script.js",
+    "frontend/standalone-gst-demo/style.css",
+    "project_state.json"
+  ]
+}

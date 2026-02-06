@@ -1,0 +1,169 @@
+{
+  "kind": "build_request",
+  "title": "Add standalone vanilla HTML/CSS/JS UI demo for GST Returns + B2B Invoicing",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Add a standalone, browser-runnable (no-build-step) frontend UI implemented with plain HTML5 + CSS3 (Flexbox/Grid) + Vanilla JavaScript (ES6) that can be opened directly via file:// by opening its index.html, without using any frameworks or libraries.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Must run directly in a web browser without frameworks",
+          "Must work by simply opening index.html in a web browser",
+          "Provide three separate files: index.html, style.css, script.js"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new standalone folder exists in the repo containing exactly index.html, style.css, and script.js (and any optional subfolders for organization if needed), and the UI works when index.html is opened directly in a browser via file://",
+        "No external JS/CSS libraries or frameworks are referenced (no React/Vue/Angular, no Tailwind, no Bootstrap, no CDN component libraries)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement the Login page in the standalone UI with username + password fields, a Login button, client-side validation, and dynamically displayed error/success messages. On successful validation, simulate login state in the browser (e.g., in-memory and/or localStorage) and navigate to the Dashboard view.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Login Page - Username and password input fields - Login button - Client-side validation - Error and success messages displayed dynamically"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting empty/invalid fields shows inline or panel errors without reloading the page",
+        "Submitting valid inputs shows a success message and transitions to the Dashboard view",
+        "Refreshing after a successful login preserves login state (or explicitly logs out if the demo chooses not to persist, but behavior must be consistent and documented in comments)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement the Dashboard page in the standalone UI with a navigation bar containing Dashboard, Invoices, GST Returns, and Logout. Show summary cards for Total Invoices, GST Payable, and Filing Status in a professional, clean card-based layout.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Dashboard Page - Navigation bar (Dashboard, Invoices, GST Returns, Logout) - Summary cards (Total Invoices, GST Payable, Filing Status) - Professional, clean layout"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Nav items switch views without full page reload (single-page style DOM updates are acceptable)",
+        "Summary cards render with realistic placeholder values and update when invoices/returns are added in the demo"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement the Invoice Management page in the standalone UI with (1) a form to add invoice details and (2) a table listing invoices. Include UI-only View and Delete buttons in each row; Delete removes the row from the UI state. View opens an in-page modal/panel or dedicated view section showing the invoice details (UI only).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Invoice Management Page - Form to add invoice details - Table to display invoice list - Buttons for View / Delete (UI only)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Invoice form validates required fields client-side and shows dynamic validation messages",
+        "Adding an invoice appends it to the table immediately without reloading",
+        "Delete removes the invoice from the table/state",
+        "View displays the selected invoice details in a readable layout"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement the GST Return page in the standalone UI with a simple form that simulates GST return filing and shows a status message after submission.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "GST Return Page - Simple form to simulate GST return filing - Status message after submission"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting the GST return form performs client-side validation and shows a clear success/error status message dynamically",
+        "Filing status reflected on the Dashboard summary card (at least as a demo state update)"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Apply a professional government/finance-style visual design across the standalone UI using a blue/white/gray color palette with responsive layout (desktop + mobile), consistent typography, spacing, and card-based UI patterns.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Professional government/finance-style UI",
+          "Blue, white, and gray color palette",
+          "Responsive design for desktop and mobile",
+          "Proper spacing, typography, and card-based layout"
+        ]
+      },
+      "acceptanceCriteria": [
+        "UI is responsive and usable on narrow widths (e.g., stacked cards, collapsible/stacked nav layout)",
+        "Consistent spacing/typography hierarchy (headings, labels, inputs, tables, buttons) across all views",
+        "Color palette is predominantly blue/white/gray"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "In the standalone script.js, implement form validation and DOM manipulation using clearly separated functions, and include fetch() calls to placeholder REST API URLs for login, invoice list/add/delete, and GST filing (handle failures gracefully and fall back to local demo state if running via file:// causes CORS/network errors).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Handle form validation",
+          "DOM manipulation for dynamic updates",
+          "Use fetch() with placeholder REST API URLs",
+          "Separate logic clearly using functions"
+        ]
+      },
+      "acceptanceCriteria": [
+        "script.js is structured into readable functions (e.g., validateLoginForm, renderInvoicesTable, handleGstSubmit, apiRequest) with clear comments",
+        "fetch() is used with clearly marked placeholder endpoints (not real keys/secrets), and the UI still functions as a demo when the requests fail (e.g., offline/file:// mode)"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Provide a folder structure description (as developer-facing comments in the files and/or a small README in the standalone folder) and ensure the code is clean, readable, and well-commented.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Provide a folder structure",
+          "Code must be clean, readable, and well-commented"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The standalone folder contains a brief explanation of how to run (open index.html) and what each file does",
+        "HTML/CSS/JS includes comments explaining key sections and non-obvious logic"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not edit any paths listed as immutable in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "Do not replace or remove the existing React/Vite application entry at frontend/index.html; add the standalone vanilla UI as new files in a separate folder so it can be opened directly without impacting the existing app."
+  ],
+  "nonGoals": [
+    "Do not implement real authentication against Internet Identity for the standalone vanilla UI (this demo is separate and uses simulated client-side login state).",
+    "Do not add or require any backend changes in Motoko for this request.",
+    "Do not introduce any external libraries/frameworks (including Tailwind, shadcn-ui, React) into the standalone vanilla UI."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Standalone vanilla UI demo for GST Returns + B2B Invoicing (file:// runnable)",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Create a standalone no-build-step vanilla HTML/CSS/JS UI runnable directly via file:// with no external libraries.",
+      "acceptanceCriteria": [
+        "A new standalone folder exists in the repo containing exactly index.html, style.css, and script.js (and any optional subfolders for organization if needed), and the UI works when index.html is opened directly in a browser via file://",
+        "No external JS/CSS libraries or frameworks are referenced (no React/Vue/Angular, no Tailwind, no Bootstrap, no CDN component libraries)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "create",
+          "description": "Create the standalone HTML entry that can run from file:// and references only local ./style.css and ./script.js; include developer-facing comments describing the folder purpose and how to run (open this file in a browser)."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "create",
+          "description": "Create standalone CSS (Flexbox/Grid) for the demo UI; ensure no external imports; include developer-facing comments describing the file's role."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "create",
+          "description": "Create standalone ES6 JavaScript that boots the SPA-style view switching and demo state management with no dependencies; include developer-facing comments describing the file's role."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement a Login view with validation, dynamic status messages, simulated login state persistence, and navigation to Dashboard on success.",
+      "acceptanceCriteria": [
+        "Submitting empty/invalid fields shows inline or panel errors without reloading the page",
+        "Submitting valid inputs shows a success message and transitions to the Dashboard view",
+        "Refreshing after a successful login preserves login state (or explicitly logs out if the demo chooses not to persist, but behavior must be consistent and documented in comments)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Add the Login view DOM structure (username/password inputs, login button, message area) and a single app container for SPA-style rendering without page reload."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Implement login view rendering, client-side validation, dynamic success/error messaging, simulated auth state (localStorage and in-memory), and post-login navigation to the Dashboard; document the chosen persistence behavior in comments."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Style the Login view with consistent form layout, input states, validation messaging, and responsive behavior consistent with the overall finance-style UI."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Implement a Dashboard view with SPA navigation (Dashboard/Invoices/GST Returns/Logout) and summary cards that reflect demo state.",
+      "acceptanceCriteria": [
+        "Nav items switch views without full page reload (single-page style DOM updates are acceptable)",
+        "Summary cards render with realistic placeholder values and update when invoices/returns are added in the demo"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Add the shared navigation bar structure and the Dashboard view section (or mount points) for rendering summary cards and view content areas."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Implement SPA-style navigation (no full reload), Dashboard rendering, Logout behavior (clears simulated login state), and computed summary values that update based on the invoices list and GST filing status in demo state."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Style the navigation bar and Dashboard cards using a clean card-based layout; include responsive rules for stacked nav/cards on mobile widths."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement Invoice Management view with an add-invoice form, invoice table, and UI-only View/Delete actions (View shows details in modal/panel; Delete updates state).",
+      "acceptanceCriteria": [
+        "Invoice form validates required fields client-side and shows dynamic validation messages",
+        "Adding an invoice appends it to the table immediately without reloading",
+        "Delete removes the invoice from the table/state",
+        "View displays the selected invoice details in a readable layout"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Add the Invoice Management view structure including: invoice form area, invoices table area, and an in-page modal/panel container for invoice detail viewing."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Implement invoice form validation and submission to local demo state, dynamic table rendering, row-level View/Delete handlers, and an in-page modal/panel renderer for invoice details (UI only)."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Style invoice form controls, table layout, row actions, and the invoice details modal/panel with accessible spacing/typography and responsive behavior."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Implement GST Return view with a simple filing form, dynamic status feedback, and dashboard filing-status updates in demo state.",
+      "acceptanceCriteria": [
+        "Submitting the GST return form performs client-side validation and shows a clear success/error status message dynamically",
+        "Filing status reflected on the Dashboard summary card (at least as a demo state update)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Add the GST Returns view structure including a simple filing form and a status/message area for submission results."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Implement GST return form validation and submission handling, dynamic status messages, and demo state updates that feed into the Dashboard 'Filing Status' summary card."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Style the GST filing form and status messaging with consistent card/form patterns and responsive layout."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Apply a professional blue/white/gray finance/government visual design with responsive layout, consistent typography, spacing, and card-based patterns across all views.",
+      "acceptanceCriteria": [
+        "UI is responsive and usable on narrow widths (e.g., stacked cards, collapsible/stacked nav layout)",
+        "Consistent spacing/typography hierarchy (headings, labels, inputs, tables, buttons) across all views",
+        "Color palette is predominantly blue/white/gray"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Define a cohesive design system for the standalone demo (CSS variables for palette, typography scale, spacing, borders, shadows), and apply consistent styling for cards, buttons, inputs, tables, nav, and responsive breakpoints."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Ensure semantic structure and reusable wrapper elements/classes exist to support consistent styling (layout containers, card sections, headings, form groups) across all views."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Structure script.js into clear functions for validation/rendering/handlers and include fetch() calls to placeholder REST URLs with graceful fallback in file:// or offline mode.",
+      "acceptanceCriteria": [
+        "script.js is structured into readable functions (e.g., validateLoginForm, renderInvoicesTable, handleGstSubmit, apiRequest) with clear comments",
+        "fetch() is used with clearly marked placeholder endpoints (not real keys/secrets), and the UI still functions as a demo when the requests fail (e.g., offline/file:// mode)"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Refactor/organize code into clearly separated functions for validation, state updates, DOM rendering, and navigation; add an apiRequest wrapper using fetch() to placeholder REST URLs for login/invoice list/add/delete/GST filing, catching network/CORS failures and falling back to local demo state with user-visible messaging."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Add developer-facing folder structure/run instructions and keep HTML/CSS/JS clean, readable, and well-commented (without adding extra files beyond the required three).",
+      "acceptanceCriteria": [
+        "The standalone folder contains a brief explanation of how to run (open index.html) and what each file does",
+        "HTML/CSS/JS includes comments explaining key sections and non-obvious logic"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/standalone-gst-demo/index.html",
+          "operation": "modify",
+          "description": "Add concise developer-facing comments at the top describing the standalone folder structure, how to run via file://, and where each view is defined/rendered."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/style.css",
+          "operation": "modify",
+          "description": "Add comments describing the styling sections (tokens, layout, components, responsive rules) and any non-obvious choices for the finance-style design."
+        },
+        {
+          "path": "frontend/standalone-gst-demo/script.js",
+          "operation": "modify",
+          "description": "Add comments describing state shape, view routing approach, key functions, and how the demo behaves when fetch() fails under file:// (fallback behavior)."
+        }
+      ]
+    }
+  ]
+}

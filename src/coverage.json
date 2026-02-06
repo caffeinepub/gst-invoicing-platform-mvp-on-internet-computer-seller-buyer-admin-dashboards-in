@@ -1,0 +1,142 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-03T16:57:10.364Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 8,
+    "implemented": 8,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Add a standalone, browser-runnable (no-build-step) frontend UI implemented with plain HTML5 + CSS3 (Flexbox/Grid) + Vanilla JavaScript (ES6) that can be opened directly via file:// by opening its index.html, without using any frameworks or libraries.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/script.js"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/script.js"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement the Login page in the standalone UI with username + password fields, a Login button, client-side validation, and dynamically displayed error/success messages. On successful validation, simulate login state in the browser (e.g., in-memory and/or localStorage) and navigate to the Dashboard view.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement the Dashboard page in the standalone UI with a navigation bar containing Dashboard, Invoices, GST Returns, and Logout. Show summary cards for Total Invoices, GST Payable, and Filing Status in a professional, clean card-based layout.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Implement the Invoice Management page in the standalone UI with (1) a form to add invoice details and (2) a table listing invoices. Include UI-only View and Delete buttons in each row; Delete removes the row from the UI state. View opens an in-page modal/panel or dedicated view section showing the invoice details (UI only).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement the GST Return page in the standalone UI with a simple form that simulates GST return filing and shows a status message after submission.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/script.js",
+          "frontend/standalone-gst-demo/style.css"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Apply a professional government/finance-style visual design across the standalone UI using a blue/white/gray color palette with responsive layout (desktop + mobile), consistent typography, spacing, and card-based UI patterns.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/index.html"
+        ]
+      },
+      {
+        "id": "REQ-7",
+        "summary": "In the standalone script.js, implement form validation and DOM manipulation using clearly separated functions, and include fetch() calls to placeholder REST API URLs for login, invoice list/add/delete, and GST filing (handle failures gracefully and fall back to local demo state if running via file:// causes CORS/network errors).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/script.js"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/script.js"
+        ]
+      },
+      {
+        "id": "REQ-8",
+        "summary": "Provide a folder structure description (as developer-facing comments in the files and/or a small README in the standalone folder) and ensure the code is clean, readable, and well-commented.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/script.js"
+        ],
+        "matchedFiles": [
+          "frontend/standalone-gst-demo/index.html",
+          "frontend/standalone-gst-demo/style.css",
+          "frontend/standalone-gst-demo/script.js"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/standalone-gst-demo/index.html",
+    "frontend/standalone-gst-demo/script.js",
+    "frontend/standalone-gst-demo/style.css",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}
