@@ -25,7 +25,7 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const GSTType = IDL.Variant({
+export const GSTRate = IDL.Variant({
   'igst' : IDL.Float64,
   'cgstSgst' : IDL.Float64,
 });
@@ -42,25 +42,46 @@ export const Invoice = IDL.Record({
   }),
   'seller' : IDL.Principal,
   'timestamp' : Time,
-  'gstRate' : GSTType,
+  'gstRate' : GSTRate,
   'buyer' : IDL.Opt(IDL.Principal),
   'placeOfSupply' : IDL.Text,
   'items' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
 });
+export const ExternalEnergyReading = IDL.Record({
+  'source' : IDL.Text,
+  'gridImport' : IDL.Float64,
+  'solarGeneration' : IDL.Float64,
+  'timestamp' : Time,
+  'batteryChargeLevel' : IDL.Float64,
+  'appliancePowerUsage' : IDL.Float64,
+  'gridExport' : IDL.Float64,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addEnergyReading' : IDL.Func(
+      [
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Text,
+      ],
+      [],
+      [],
+    ),
   'assignAdminRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
   'assignBuyerRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'assignSellerRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
-  'calculateGST' : IDL.Func([IDL.Float64, GSTType], [IDL.Float64], ['query']),
+  'calculateGST' : IDL.Func([IDL.Float64, GSTRate], [IDL.Float64], ['query']),
   'createInvoice' : IDL.Func(
       [
         IDL.Text,
         IDL.Opt(IDL.Principal),
         IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
-        GSTType,
+        GSTRate,
         IDL.Variant({
           'verified' : IDL.Null,
           'cancelled' : IDL.Null,
@@ -79,7 +100,7 @@ export const idlService = IDL.Service({
         IDL.Text,
         IDL.Opt(IDL.Principal),
         IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
-        GSTType,
+        GSTRate,
         IDL.Variant({
           'verified' : IDL.Null,
           'cancelled' : IDL.Null,
@@ -98,6 +119,16 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getInvoice' : IDL.Func([IDL.Text], [IDL.Opt(Invoice)], ['query']),
+  'getLatestReadings' : IDL.Func(
+      [],
+      [IDL.Opt(ExternalEnergyReading)],
+      ['query'],
+    ),
+  'getReadingsSince' : IDL.Func(
+      [Time],
+      [IDL.Vec(ExternalEnergyReading)],
+      ['query'],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -146,7 +177,7 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const GSTType = IDL.Variant({
+  const GSTRate = IDL.Variant({
     'igst' : IDL.Float64,
     'cgstSgst' : IDL.Float64,
   });
@@ -163,25 +194,46 @@ export const idlFactory = ({ IDL }) => {
     }),
     'seller' : IDL.Principal,
     'timestamp' : Time,
-    'gstRate' : GSTType,
+    'gstRate' : GSTRate,
     'buyer' : IDL.Opt(IDL.Principal),
     'placeOfSupply' : IDL.Text,
     'items' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
   });
+  const ExternalEnergyReading = IDL.Record({
+    'source' : IDL.Text,
+    'gridImport' : IDL.Float64,
+    'solarGeneration' : IDL.Float64,
+    'timestamp' : Time,
+    'batteryChargeLevel' : IDL.Float64,
+    'appliancePowerUsage' : IDL.Float64,
+    'gridExport' : IDL.Float64,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addEnergyReading' : IDL.Func(
+        [
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Text,
+        ],
+        [],
+        [],
+      ),
     'assignAdminRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
     'assignBuyerRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'assignSellerRole' : IDL.Func([IDL.Principal, UserProfile], [], []),
-    'calculateGST' : IDL.Func([IDL.Float64, GSTType], [IDL.Float64], ['query']),
+    'calculateGST' : IDL.Func([IDL.Float64, GSTRate], [IDL.Float64], ['query']),
     'createInvoice' : IDL.Func(
         [
           IDL.Text,
           IDL.Opt(IDL.Principal),
           IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
-          GSTType,
+          GSTRate,
           IDL.Variant({
             'verified' : IDL.Null,
             'cancelled' : IDL.Null,
@@ -200,7 +252,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Text,
           IDL.Opt(IDL.Principal),
           IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
-          GSTType,
+          GSTRate,
           IDL.Variant({
             'verified' : IDL.Null,
             'cancelled' : IDL.Null,
@@ -219,6 +271,16 @@ export const idlFactory = ({ IDL }) => {
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getInvoice' : IDL.Func([IDL.Text], [IDL.Opt(Invoice)], ['query']),
+    'getLatestReadings' : IDL.Func(
+        [],
+        [IDL.Opt(ExternalEnergyReading)],
+        ['query'],
+      ),
+    'getReadingsSince' : IDL.Func(
+        [Time],
+        [IDL.Vec(ExternalEnergyReading)],
+        ['query'],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],

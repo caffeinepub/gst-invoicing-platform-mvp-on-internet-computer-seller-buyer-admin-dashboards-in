@@ -13,7 +13,16 @@ import type { Principal } from '@icp-sdk/core/principal';
 export type AppRole = { 'admin' : null } |
   { 'seller' : null } |
   { 'buyer' : null };
-export type GSTType = { 'igst' : number } |
+export interface ExternalEnergyReading {
+  'source' : string,
+  'gridImport' : number,
+  'solarGeneration' : number,
+  'timestamp' : Time,
+  'batteryChargeLevel' : number,
+  'appliancePowerUsage' : number,
+  'gridExport' : number,
+}
+export type GSTRate = { 'igst' : number } |
   { 'cgstSgst' : number };
 export interface Invoice {
   'id' : string,
@@ -25,7 +34,7 @@ export interface Invoice {
     { 'draft' : null },
   'seller' : Principal,
   'timestamp' : Time,
-  'gstRate' : GSTType,
+  'gstRate' : GSTRate,
   'buyer' : [] | [Principal],
   'placeOfSupply' : string,
   'items' : Array<[string, bigint]>,
@@ -43,17 +52,21 @@ export type UserRole = { 'admin' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addEnergyReading' : ActorMethod<
+    [number, number, number, number, number, string],
+    undefined
+  >,
   'assignAdminRole' : ActorMethod<[Principal, UserProfile], undefined>,
   'assignBuyerRole' : ActorMethod<[Principal, UserProfile], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'assignSellerRole' : ActorMethod<[Principal, UserProfile], undefined>,
-  'calculateGST' : ActorMethod<[number, GSTType], number>,
+  'calculateGST' : ActorMethod<[number, GSTRate], number>,
   'createInvoice' : ActorMethod<
     [
       string,
       [] | [Principal],
       Array<[string, bigint]>,
-      GSTType,
+      GSTRate,
       { 'verified' : null } |
         { 'cancelled' : null } |
         { 'paid' : null } |
@@ -69,7 +82,7 @@ export interface _SERVICE {
       string,
       [] | [Principal],
       Array<[string, bigint]>,
-      GSTType,
+      GSTRate,
       { 'verified' : null } |
         { 'cancelled' : null } |
         { 'paid' : null } |
@@ -85,6 +98,8 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getInvoice' : ActorMethod<[string], [] | [Invoice]>,
+  'getLatestReadings' : ActorMethod<[], [] | [ExternalEnergyReading]>,
+  'getReadingsSince' : ActorMethod<[Time], Array<ExternalEnergyReading>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getUserRole' : ActorMethod<[Principal], UserRole>,
   'isCallerAdmin' : ActorMethod<[], boolean>,

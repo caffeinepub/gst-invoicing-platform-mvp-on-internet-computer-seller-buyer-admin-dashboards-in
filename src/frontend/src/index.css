@@ -4,78 +4,90 @@
 
 @layer base {
     :root {
-        --radius: 0.5rem;
+        --radius: 0.75rem;
         
-        /* Charcoal + Saffron theme */
-        --background: 0.98 0 0;
-        --foreground: 0.18 0.01 270;
+        /* Eco-friendly green energy theme */
+        --background: 0.98 0.01 140;
+        --foreground: 0.20 0.02 160;
         
         --card: 1 0 0;
-        --card-foreground: 0.18 0.01 270;
+        --card-foreground: 0.20 0.02 160;
         
         --popover: 1 0 0;
-        --popover-foreground: 0.18 0.01 270;
+        --popover-foreground: 0.20 0.02 160;
         
-        --primary: 0.18 0.01 270;
+        --primary: 0.55 0.15 155;
         --primary-foreground: 0.98 0 0;
         
-        --secondary: 0.92 0.005 270;
-        --secondary-foreground: 0.18 0.01 270;
+        --secondary: 0.92 0.02 145;
+        --secondary-foreground: 0.20 0.02 160;
         
-        --muted: 0.95 0.005 270;
-        --muted-foreground: 0.48 0.01 270;
+        --muted: 0.95 0.01 145;
+        --muted-foreground: 0.50 0.02 155;
         
-        --accent: 0.75 0.15 65;
-        --accent-foreground: 0.18 0.01 270;
+        --accent: 0.70 0.18 145;
+        --accent-foreground: 0.98 0 0;
+        
+        --success: 0.60 0.16 150;
+        --success-foreground: 0.98 0 0;
+        
+        --warning: 0.75 0.15 80;
+        --warning-foreground: 0.20 0.02 160;
         
         --destructive: 0.55 0.22 25;
         --destructive-foreground: 0.98 0 0;
         
-        --border: 0.88 0.005 270;
-        --input: 0.88 0.005 270;
-        --ring: 0.18 0.01 270;
+        --border: 0.88 0.01 145;
+        --input: 0.88 0.01 145;
+        --ring: 0.55 0.15 155;
         
-        --chart-1: 0.65 0.18 220;
-        --chart-2: 0.70 0.15 160;
-        --chart-3: 0.60 0.12 280;
-        --chart-4: 0.75 0.15 65;
-        --chart-5: 0.55 0.20 340;
+        --chart-1: 0.60 0.16 150;
+        --chart-2: 0.70 0.18 145;
+        --chart-3: 0.50 0.14 160;
+        --chart-4: 0.75 0.15 80;
+        --chart-5: 0.65 0.12 170;
     }
 
     .dark {
-        --background: 0.12 0.01 270;
-        --foreground: 0.95 0.005 270;
+        --background: 0.15 0.02 160;
+        --foreground: 0.95 0.01 145;
         
-        --card: 0.16 0.01 270;
-        --card-foreground: 0.95 0.005 270;
+        --card: 0.18 0.02 160;
+        --card-foreground: 0.95 0.01 145;
         
-        --popover: 0.14 0.01 270;
-        --popover-foreground: 0.95 0.005 270;
+        --popover: 0.16 0.02 160;
+        --popover-foreground: 0.95 0.01 145;
         
-        --primary: 0.92 0.005 270;
-        --primary-foreground: 0.18 0.01 270;
+        --primary: 0.65 0.16 150;
+        --primary-foreground: 0.15 0.02 160;
         
-        --secondary: 0.22 0.01 270;
-        --secondary-foreground: 0.95 0.005 270;
+        --secondary: 0.25 0.02 155;
+        --secondary-foreground: 0.95 0.01 145;
         
-        --muted: 0.22 0.01 270;
-        --muted-foreground: 0.65 0.01 270;
+        --muted: 0.25 0.02 155;
+        --muted-foreground: 0.65 0.02 150;
         
-        --accent: 0.75 0.15 65;
-        --accent-foreground: 0.12 0.01 270;
+        --accent: 0.70 0.18 145;
+        --accent-foreground: 0.15 0.02 160;
+        
+        --success: 0.60 0.16 150;
+        --success-foreground: 0.15 0.02 160;
+        
+        --warning: 0.75 0.15 80;
+        --warning-foreground: 0.15 0.02 160;
         
         --destructive: 0.60 0.22 25;
-        --destructive-foreground: 0.95 0.005 270;
+        --destructive-foreground: 0.95 0.01 145;
         
-        --border: 0.25 0.01 270;
-        --input: 0.25 0.01 270;
-        --ring: 0.75 0.15 65;
+        --border: 0.28 0.02 155;
+        --input: 0.28 0.02 155;
+        --ring: 0.65 0.16 150;
         
-        --chart-1: 0.65 0.18 220;
-        --chart-2: 0.70 0.15 160;
-        --chart-3: 0.60 0.12 280;
-        --chart-4: 0.75 0.15 65;
-        --chart-5: 0.55 0.20 340;
+        --chart-1: 0.60 0.16 150;
+        --chart-2: 0.70 0.18 145;
+        --chart-3: 0.50 0.14 160;
+        --chart-4: 0.75 0.15 80;
+        --chart-5: 0.65 0.12 170;
     }
 
     * {
@@ -85,5 +97,12 @@
     body {
         @apply bg-background text-foreground;
         font-feature-settings: "rlig" 1, "calt" 1;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+}
+
+@layer utilities {
+    .transition-smooth {
+        transition: all 0.2s ease-in-out;
     }
 }

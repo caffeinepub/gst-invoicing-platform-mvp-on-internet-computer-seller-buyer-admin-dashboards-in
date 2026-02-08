@@ -1,236 +1,87 @@
 import { createRouter, RouterProvider, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useCurrentUser } from './hooks/useCurrentUser';
-import LoginScreen from './components/auth/LoginScreen';
-import ProfileSetupModal from './components/auth/ProfileSetupModal';
-import AppLayout from './components/layout/AppLayout';
-import SellerDashboardPage from './pages/seller/SellerDashboardPage';
-import BuyerDashboardPage from './pages/buyer/BuyerDashboardPage';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage';
-import InvoiceListPage from './pages/invoices/InvoiceListPage';
-import InvoiceDetailPage from './pages/invoices/InvoiceDetailPage';
-import InvoiceCreateEditPage from './pages/invoices/InvoiceCreateEditPage';
-import InventoryPage from './pages/inventory/InventoryPage';
-import LowStockAlertsPage from './pages/inventory/LowStockAlertsPage';
-import AuditLogPage from './pages/audit/AuditLogPage';
-import GstReturnsPage from './pages/gst/GstReturnsPage';
-import RoleManagementPage from './pages/admin/RoleManagementPage';
-import AccessDeniedScreen from './components/auth/AccessDeniedScreen';
-import RoleGuard from './components/auth/RoleGuard';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
-import { AppRole } from './backend';
+import AppLayout from './components/layout/AppLayout';
+import HomeAuthPage from './pages/auth/HomeAuthPage';
+import OverviewPage from './pages/energy/OverviewPage';
+import InputsPage from './pages/energy/InputsPage';
+import ConsumptionPage from './pages/energy/ConsumptionPage';
+import SolarAnalysisPage from './pages/energy/SolarAnalysisPage';
+import CostEstimationPage from './pages/energy/CostEstimationPage';
+import { EnergyFlowProvider } from './state/EnergyFlowContext';
+import { AuthProvider } from './context/AuthContext';
+import { LiveTelemetryProvider } from './context/LiveTelemetryContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
-function RootComponent() {
-  const { identity } = useInternetIdentity();
-  const { userProfile, isProfileLoading, isProfileFetched } = useCurrentUser();
-
-  if (!identity) {
-    return <LoginScreen />;
-  }
-
-  const showProfileSetup = !!identity && !isProfileLoading && isProfileFetched && userProfile === null;
-
+function AuthenticatedLayout() {
   return (
-    <>
-      {showProfileSetup && <ProfileSetupModal />}
+    <LiveTelemetryProvider>
       <AppLayout>
         <Outlet />
       </AppLayout>
-    </>
-  );
-}
-
-function IndexComponent() {
-  const { appRole } = useCurrentUser();
-  
-  if (appRole === AppRole.seller) {
-    return <SellerDashboardPage />;
-  } else if (appRole === AppRole.buyer) {
-    return <BuyerDashboardPage />;
-  } else if (appRole === AppRole.admin) {
-    return <AdminDashboardPage />;
-  }
-  
-  return <AccessDeniedScreen message="Please contact an administrator to assign you a role." />;
-}
-
-function SellerDashboardComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <SellerDashboardPage />
-    </RoleGuard>
-  );
-}
-
-function BuyerDashboardComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.buyer, AppRole.admin]}>
-      <BuyerDashboardPage />
-    </RoleGuard>
-  );
-}
-
-function AdminDashboardComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.admin]}>
-      <AdminDashboardPage />
-    </RoleGuard>
-  );
-}
-
-function InvoiceCreateComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <InvoiceCreateEditPage />
-    </RoleGuard>
-  );
-}
-
-function InvoiceEditComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <InvoiceCreateEditPage />
-    </RoleGuard>
-  );
-}
-
-function InventoryComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <InventoryPage />
-    </RoleGuard>
-  );
-}
-
-function LowStockComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <LowStockAlertsPage />
-    </RoleGuard>
-  );
-}
-
-function AuditComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.admin]}>
-      <AuditLogPage />
-    </RoleGuard>
-  );
-}
-
-function GstReturnsComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.seller, AppRole.admin]}>
-      <GstReturnsPage />
-    </RoleGuard>
-  );
-}
-
-function RoleManagementComponent() {
-  return (
-    <RoleGuard allowedRoles={[AppRole.admin]}>
-      <RoleManagementPage />
-    </RoleGuard>
+    </LiveTelemetryProvider>
   );
 }
 
 const rootRoute = createRootRoute({
-  component: RootComponent,
+  component: () => <Outlet />,
 });
 
-const indexRoute = createRoute({
+const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: IndexComponent,
+  component: HomeAuthPage,
 });
 
-const sellerDashboardRoute = createRoute({
+const authenticatedRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/seller',
-  component: SellerDashboardComponent,
+  id: 'authenticated',
+  component: () => (
+    <ProtectedRoute>
+      <AuthenticatedLayout />
+    </ProtectedRoute>
+  ),
 });
 
-const buyerDashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/buyer',
-  component: BuyerDashboardComponent,
+const dashboardRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: '/dashboard',
+  component: OverviewPage,
 });
 
-const adminDashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin',
-  component: AdminDashboardComponent,
+const inputsRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: '/inputs',
+  component: InputsPage,
 });
 
-const invoicesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/invoices',
-  component: InvoiceListPage,
+const consumptionRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: '/consumption',
+  component: ConsumptionPage,
 });
 
-const invoiceDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/invoices/$invoiceId',
-  component: InvoiceDetailPage,
+const solarAnalysisRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: '/solar-analysis',
+  component: SolarAnalysisPage,
 });
 
-const invoiceCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/invoices/create',
-  component: InvoiceCreateComponent,
-});
-
-const invoiceEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/invoices/$invoiceId/edit',
-  component: InvoiceEditComponent,
-});
-
-const inventoryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/inventory',
-  component: InventoryComponent,
-});
-
-const lowStockRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/inventory/low-stock',
-  component: LowStockComponent,
-});
-
-const auditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/audit',
-  component: AuditComponent,
-});
-
-const gstReturnsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/gst-returns',
-  component: GstReturnsComponent,
-});
-
-const roleManagementRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/roles',
-  component: RoleManagementComponent,
+const costEstimationRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: '/cost-estimation',
+  component: CostEstimationPage,
 });
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  sellerDashboardRoute,
-  buyerDashboardRoute,
-  adminDashboardRoute,
-  invoicesRoute,
-  invoiceDetailRoute,
-  invoiceCreateRoute,
-  invoiceEditRoute,
-  inventoryRoute,
-  lowStockRoute,
-  auditRoute,
-  gstReturnsRoute,
-  roleManagementRoute,
+  homeRoute,
+  authenticatedRoute.addChildren([
+    dashboardRoute,
+    inputsRoute,
+    consumptionRoute,
+    solarAnalysisRoute,
+    costEstimationRoute,
+  ]),
 ]);
 
 const router = createRouter({ routeTree });
@@ -244,8 +95,12 @@ declare module '@tanstack/react-router' {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <RouterProvider router={router} />
-      <Toaster />
+      <AuthProvider>
+        <EnergyFlowProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </EnergyFlowProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -1,31 +1,83 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-03T16:57:10.327Z",
-  "summary": "A new standalone vanilla HTML/CSS/JS demo appears to have been added under frontend/standalone-gst-demo with index.html, style.css, and script.js, including developer-facing run instructions/comments. However, the diff also shows unrelated modifications to repo metadata/summary files describing extensive React app changes that were not requested for this BuildRequest.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-08T17:15:03.694Z",
+  "summary": "Diff adds frontend polling-based live telemetry (context, service, UI badges/last-updated, animated numbers) and adds an energyReadings field via migration, but backend ingestion/validation/authz and backend live-read query APIs are not evidenced in the provided backend diff excerpt. Streaming (WS/SSE) and JWT attachment are not shown; service appears polling-only.",
+  "missing_requirements": [
     {
-      "description": "Unrequested modifications to the existing React/Vite application and related frontend features (e.g., RBAC, dashboards, role management, invoice pages, inventory pages, audit log, GST returns page) as described in the modified frontend-file-summaries.txt.",
-      "reason": "The BuildRequest specifically asks to add a standalone vanilla UI in new files without impacting the existing React/Vite app; it does not request feature work or refactors in the React app.",
+      "id": "REQ-1",
+      "requirement": "Add an authenticated ingestion API for real-time energy readings with validation and normalization; reject malformed readings with clear errors (no traps) and do not persist invalid data.",
+      "reason": "backend/main.mo diff excerpt shows only type/storage additions (ExternalEnergyReading, energyReadings) but no ingestion method, no validation/normalization logic, and no clear non-trap error handling for malformed readings.",
       "evidence": [
-        "frontend-file-summaries.txt"
+        "backend/main.mo (truncated)",
+        "backend/migration.mo"
       ]
     },
     {
-      "description": "Unrequested update to project_state.json describing new/existing features and summaries beyond adding the standalone demo.",
-      "reason": "The BuildRequest does not ask for project state/metadata updates.",
+      "id": "REQ-2",
+      "requirement": "Persist and serve time-ordered energy readings with queries for (a) latest values for all metric groups in one response and (b) incremental updates since a timestamp/cursor with bounded payload size and ordered results.",
+      "reason": "Frontend calls actor.getLatestReadings() and actor.getReadingsSince(), but the backend diff excerpt does not show these query methods, ordering guarantees, or bounded payload/throttling enforcement in the canister.",
       "evidence": [
-        "project_state.json"
+        "frontend/src/services/liveReadingsApi.ts",
+        "frontend/src/services/realTimeEnergyService.ts",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Centralized authorization checks using the existing authenticated session model, ensuring unauthenticated callers cannot ingest or query live readings; unauthorized returns clear error.",
+      "reason": "No evidence in backend diff excerpt of centralized auth checks applied to new ingestion/live-read APIs. Existing code uses Runtime.trap for unauthorized in profile queries, which conflicts with the requirement for clear errors/no traps for live readings APIs, and no token-based session handling is shown.",
+      "evidence": [
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "Real-time client service attempts WS/SSE stream first and falls back to incremental polling; attaches JWT from localStorage('auth_token') to stream and HTTP requests; reconnect with backoff and resume via last-seen cursor; throttles UI updates; degrades to existing REST flows without crashing.",
+      "reason": "realTimeEnergyService implements polling, backoff, resume via lastSeenTimestamp, and throttled batching, but there is no evidence of attempting WS/SSE endpoints, no evidence of attaching JWT from localStorage to any connection/request, and no explicit stream-to-poll fallback transition logic.",
+      "evidence": [
+        "frontend/src/services/realTimeEnergyService.ts (truncated)",
+        "frontend/src/services/liveReadingsApi.ts"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "requirement": "Live-telemetry React context/hooks exposing latest readings, rolling averages per metric over a short window, global connection status, and per-metric freshness timestamps.",
+      "reason": "Context shows rollingWindow maintenance and a calculateRollingAverages helper, but the diff excerpt is truncated before showing that rollingAverages is actually computed/stored/exposed in context value. Freshness is set to 'now' for all metrics rather than per-metric timestamps derived from readings, and may not reflect per-metric last-updated semantics.",
+      "evidence": [
+        "frontend/src/context/LiveTelemetryContext.tsx (truncated)",
+        "frontend/src/types/liveTelemetry.ts"
       ]
     }
   ],
-  "confidence": 0.68,
+  "hallucinated_features": [
+    {
+      "description": "Added/modified broad role-based access control, dashboards (seller/buyer/admin), invoices, inventory, audit, and GST pages unrelated to live energy ingestion/dashboard update requirements.",
+      "reason": "BuildRequest focuses on live energy readings ingestion and near-real-time dashboard updates; the diff summary indicates many additional auth/role/invoice/inventory/audit/GST UI features not requested.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.66,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/standalone-gst-demo/index.html",
-    "frontend/standalone-gst-demo/script.js",
-    "frontend/standalone-gst-demo/style.css",
+    "frontend/src/App.tsx",
+    "frontend/src/components/energy/AnimatedNumber.tsx",
+    "frontend/src/components/energy/LastUpdatedLabel.tsx",
+    "frontend/src/components/energy/LiveStatusBadge.tsx",
+    "frontend/src/config/polling.ts",
+    "frontend/src/context/LiveTelemetryContext.tsx",
+    "frontend/src/hooks/useLiveTelemetry.ts",
+    "frontend/src/pages/energy/ConsumptionPage.tsx",
+    "frontend/src/pages/energy/CostEstimationPage.tsx",
+    "frontend/src/pages/energy/SolarAnalysisPage.tsx",
+    "frontend/src/services/liveReadingsApi.ts",
+    "frontend/src/services/realTimeEnergyService.ts",
+    "frontend/src/types/liveTelemetry.ts",
+    "frontend/src/utils/realtimeLogging.ts",
     "project_state.json"
   ]
 }

@@ -90,17 +90,26 @@ export class ExternalBlob {
     }
 }
 export type Time = bigint;
+export interface ExternalEnergyReading {
+    source: string;
+    gridImport: number;
+    solarGeneration: number;
+    timestamp: Time;
+    batteryChargeLevel: number;
+    appliancePowerUsage: number;
+    gridExport: number;
+}
 export interface Invoice {
     id: string;
     status: Variant_verified_cancelled_paid_sent_rejected_draft;
     seller: Principal;
     timestamp: Time;
-    gstRate: GSTType;
+    gstRate: GSTRate;
     buyer?: Principal;
     placeOfSupply: string;
     items: Array<[string, bigint]>;
 }
-export type GSTType = {
+export type GSTRate = {
     __kind__: "igst";
     igst: number;
 } | {
@@ -134,18 +143,21 @@ export enum Variant_verified_cancelled_paid_sent_rejected_draft {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addEnergyReading(appliancePowerUsage: number, solarGeneration: number, batteryChargeLevel: number, gridImport: number, gridExport: number, source: string): Promise<void>;
     assignAdminRole(user: Principal, profile: UserProfile): Promise<void>;
     assignBuyerRole(user: Principal, profile: UserProfile): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignSellerRole(user: Principal, profile: UserProfile): Promise<void>;
-    calculateGST(amount: number, gstType: GSTType): Promise<number>;
-    createInvoice(id: string, buyer: Principal | null, items: Array<[string, bigint]>, gstRate: GSTType, pStatus: Variant_verified_cancelled_paid_sent_rejected_draft, placeOfSupply: string): Promise<void>;
-    createInvoiceCaller(id: string, buyer: Principal | null, items: Array<[string, bigint]>, gstRate: GSTType, status: Variant_verified_cancelled_paid_sent_rejected_draft, placeOfSupply: string): Promise<void>;
+    calculateGST(amount: number, gstType: GSTRate): Promise<number>;
+    createInvoice(id: string, buyer: Principal | null, items: Array<[string, bigint]>, gstRate: GSTRate, pStatus: Variant_verified_cancelled_paid_sent_rejected_draft, placeOfSupply: string): Promise<void>;
+    createInvoiceCaller(id: string, buyer: Principal | null, items: Array<[string, bigint]>, gstRate: GSTRate, status: Variant_verified_cancelled_paid_sent_rejected_draft, placeOfSupply: string): Promise<void>;
     getAllInvoices(): Promise<Array<Invoice>>;
     getAppRole(user: Principal): Promise<AppRole | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getInvoice(id: string): Promise<Invoice | null>;
+    getLatestReadings(): Promise<ExternalEnergyReading | null>;
+    getReadingsSince(timestamp: Time): Promise<Array<ExternalEnergyReading>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     getUserRole(user: Principal): Promise<UserRole>;
     isCallerAdmin(): Promise<boolean>;
@@ -155,7 +167,7 @@ export interface backendInterface {
     updateInvoice(id: string, pStatus: Variant_verified_cancelled_paid_sent_rejected_draft): Promise<void>;
     verifyInvoice(id: string): Promise<void>;
 }
-import type { AppRole as _AppRole, GSTType as _GSTType, Invoice as _Invoice, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { AppRole as _AppRole, ExternalEnergyReading as _ExternalEnergyReading, GSTRate as _GSTRate, Invoice as _Invoice, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -169,6 +181,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            return result;
+        }
+    }
+    async addEnergyReading(arg0: number, arg1: number, arg2: number, arg3: number, arg4: number, arg5: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addEnergyReading(arg0, arg1, arg2, arg3, arg4, arg5);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addEnergyReading(arg0, arg1, arg2, arg3, arg4, arg5);
             return result;
         }
     }
@@ -228,45 +254,45 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async calculateGST(arg0: number, arg1: GSTType): Promise<number> {
+    async calculateGST(arg0: number, arg1: GSTRate): Promise<number> {
         if (this.processError) {
             try {
-                const result = await this.actor.calculateGST(arg0, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.calculateGST(arg0, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.calculateGST(arg0, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.calculateGST(arg0, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
-    async createInvoice(arg0: string, arg1: Principal | null, arg2: Array<[string, bigint]>, arg3: GSTType, arg4: Variant_verified_cancelled_paid_sent_rejected_draft, arg5: string): Promise<void> {
+    async createInvoice(arg0: string, arg1: Principal | null, arg2: Array<[string, bigint]>, arg3: GSTRate, arg4: Variant_verified_cancelled_paid_sent_rejected_draft, arg5: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createInvoice(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+                const result = await this.actor.createInvoice(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createInvoice(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+            const result = await this.actor.createInvoice(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
             return result;
         }
     }
-    async createInvoiceCaller(arg0: string, arg1: Principal | null, arg2: Array<[string, bigint]>, arg3: GSTType, arg4: Variant_verified_cancelled_paid_sent_rejected_draft, arg5: string): Promise<void> {
+    async createInvoiceCaller(arg0: string, arg1: Principal | null, arg2: Array<[string, bigint]>, arg3: GSTRate, arg4: Variant_verified_cancelled_paid_sent_rejected_draft, arg5: string): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.createInvoiceCaller(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+                const result = await this.actor.createInvoiceCaller(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createInvoiceCaller(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTType_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
+            const result = await this.actor.createInvoiceCaller(arg0, to_candid_opt_n9(this._uploadFile, this._downloadFile, arg1), arg2, to_candid_GSTRate_n7(this._uploadFile, this._downloadFile, arg3), to_candid_variant_n10(this._uploadFile, this._downloadFile, arg4), arg5);
             return result;
         }
     }
@@ -338,6 +364,34 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getInvoice(arg0);
             return from_candid_opt_n27(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getLatestReadings(): Promise<ExternalEnergyReading | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getLatestReadings();
+                return from_candid_opt_n28(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getLatestReadings();
+            return from_candid_opt_n28(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getReadingsSince(arg0: Time): Promise<Array<ExternalEnergyReading>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getReadingsSince(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getReadingsSince(arg0);
+            return result;
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
@@ -456,7 +510,7 @@ export class Backend implements backendInterface {
 function from_candid_AppRole_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AppRole): AppRole {
     return from_candid_variant_n20(_uploadFile, _downloadFile, value);
 }
-function from_candid_GSTType_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _GSTType): GSTType {
+function from_candid_GSTRate_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _GSTRate): GSTRate {
     return from_candid_variant_n16(_uploadFile, _downloadFile, value);
 }
 function from_candid_Invoice_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Invoice): Invoice {
@@ -483,6 +537,9 @@ function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function from_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Invoice]): Invoice | null {
     return value.length === 0 ? null : from_candid_Invoice_n12(_uploadFile, _downloadFile, value[0]);
 }
+function from_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_ExternalEnergyReading]): ExternalEnergyReading | null {
+    return value.length === 0 ? null : value[0];
+}
 function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: string;
     status: {
@@ -500,7 +557,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
     };
     seller: Principal;
     timestamp: _Time;
-    gstRate: _GSTType;
+    gstRate: _GSTRate;
     buyer: [] | [Principal];
     placeOfSupply: string;
     items: Array<[string, bigint]>;
@@ -509,7 +566,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
     status: Variant_verified_cancelled_paid_sent_rejected_draft;
     seller: Principal;
     timestamp: Time;
-    gstRate: GSTType;
+    gstRate: GSTRate;
     buyer?: Principal;
     placeOfSupply: string;
     items: Array<[string, bigint]>;
@@ -519,7 +576,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
         status: from_candid_variant_n14(_uploadFile, _downloadFile, value.status),
         seller: value.seller,
         timestamp: value.timestamp,
-        gstRate: from_candid_GSTType_n15(_uploadFile, _downloadFile, value.gstRate),
+        gstRate: from_candid_GSTRate_n15(_uploadFile, _downloadFile, value.gstRate),
         buyer: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.buyer)),
         placeOfSupply: value.placeOfSupply,
         items: value.items
@@ -604,7 +661,7 @@ function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 function to_candid_AppRole_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AppRole): _AppRole {
     return to_candid_variant_n4(_uploadFile, _downloadFile, value);
 }
-function to_candid_GSTType_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GSTType): _GSTType {
+function to_candid_GSTRate_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GSTRate): _GSTRate {
     return to_candid_variant_n8(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserProfile_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {

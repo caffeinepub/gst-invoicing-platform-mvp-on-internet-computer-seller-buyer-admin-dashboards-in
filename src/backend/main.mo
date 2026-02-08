@@ -11,7 +11,9 @@ import List "mo:core/List";
 import Iter "mo:core/Iter";
 import ImportAccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   public type AppRole = {
     #seller;
@@ -27,24 +29,9 @@ actor {
     state : ?Text;
   };
 
-  type GSTType = {
+  type GSTRate = {
     #cgstSgst : Float;
     #igst : Float;
-  };
-
-  module GSTType {
-    public func compare(type1 : GSTType, type2 : GSTType) : Order.Order {
-      switch (type1, type2) {
-        case (#cgstSgst rate1, #cgstSgst rate2) {
-          Float.compare(rate1, rate2);
-        };
-        case (#cgstSgst _, #igst _) { #less };
-        case (#igst _, #cgstSgst _) { #greater };
-        case (#igst rate1, #igst rate2) {
-          Float.compare(rate1, rate2);
-        };
-      };
-    };
   };
 
   type Invoice = {
@@ -60,19 +47,76 @@ actor {
       #paid;
       #cancelled;
     };
-    gstRate : GSTType;
+    gstRate : GSTRate;
     placeOfSupply : Text;
     timestamp : Time.Time;
   };
 
-  module Invoice {
-    public func compare(invoice1 : Invoice, invoice2 : Invoice) : Order.Order {
-      Text.compare(invoice1.id, invoice2.id);
-    };
+  public type ValidationResult = {
+    #ok;
+    #billingUnregisteredConsumingPrincipal : Text;
+  };
+
+  public type RejectionReason = {
+    #unknownPrincipal : Text;
+  };
+
+  public type InvoiceStatusUpdate = {
+    #draft;
+    #sent;
+    #verified;
+    #rejected;
+    #paid;
+    #cancelled;
+  };
+
+  public type ValidationStatus = {
+    #draft;
+    #sent;
+    #verified : Nat; // include validation score
+    #rejected : Text; // include reason
+    #paid;
+    #cancelled;
+  };
+
+  public type Address = {
+    street : Text;
+    city : Text;
+    state : ?Text;
+    cityCode : ?Nat;
+    gisCoords : ?(Float, Float);
+  };
+
+  public type Notification = {
+    id : Text;
+    user : ?Principal;
+    message : Text;
+    _type : NotificationType;
+    timestamp : Time.Time;
+    isRead : Bool;
+  };
+
+  public type NotificationType = {
+    #invoiceCreated;
+    #invoiceStatusUpdate;
+    #validationResult;
+    #paymentReminder;
+    #general;
+  };
+
+  type ExternalEnergyReading = {
+    appliancePowerUsage : Float; // Watts
+    solarGeneration : Float; // kW
+    batteryChargeLevel : Float; // Percentage (0-100)
+    gridImport : Float; // kWh imported from grid
+    gridExport : Float; // kWh exported to grid
+    timestamp : Time.Time;
+    source : Text; // e.g. "local_sensor", "third_party_api"
   };
 
   let invoices = Map.empty<Text, Invoice>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let energyReadings = List.empty<ExternalEnergyReading>();
 
   let accessControlState = ImportAccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -211,7 +255,7 @@ actor {
     id : Text,
     buyer : ?Principal,
     items : [(Text, Nat)],
-    gstRate : GSTType,
+    gstRate : GSTRate,
     pStatus : { #draft; #sent; #verified; #rejected; #paid; #cancelled },
     placeOfSupply : Text,
   ) : async () {
@@ -246,7 +290,7 @@ actor {
     id : Text,
     buyer : ?Principal,
     items : [(Text, Nat)],
-    gstRate : GSTType,
+    gstRate : GSTRate,
     status : {
       #draft;
       #sent;
@@ -329,7 +373,7 @@ actor {
   };
 
   // Public query function - no authentication needed for GST calculation (pure math)
-  public query func calculateGST(amount : Float, gstType : GSTType) : async Float {
+  public query func calculateGST(amount : Float, gstType : GSTRate) : async Float {
     switch (gstType) {
       case (#cgstSgst rate) {
         amount * rate / 100;
@@ -498,5 +542,51 @@ actor {
     };
 
     invoices.add(id, updatedInvoice);
+  };
+
+  // Add new energy reading
+  public shared ({ caller }) func addEnergyReading(
+    appliancePowerUsage : Float,
+    solarGeneration : Float,
+    batteryChargeLevel : Float,
+    gridImport : Float,
+    gridExport : Float,
+    source : Text,
+  ) : async () {
+    if (not (ImportAccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can add energy readings");
+    };
+
+    let reading : ExternalEnergyReading = {
+      appliancePowerUsage;
+      solarGeneration;
+      batteryChargeLevel;
+      gridImport;
+      gridExport;
+      timestamp = Time.now();
+      source;
+    };
+
+    energyReadings.add(reading);
+  };
+
+  // Get latest reading for each metric
+  public query ({ caller }) func getLatestReadings() : async ?ExternalEnergyReading {
+    if (not (ImportAccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can get latest readings");
+    };
+
+    energyReadings.last();
+  };
+
+  // Get readings since a given timestamp
+  public query ({ caller }) func getReadingsSince(timestamp : Time.Time) : async [ExternalEnergyReading] {
+    if (not (ImportAccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can get readings");
+    };
+
+    energyReadings.toArray().filter(
+      func(reading) { reading.timestamp > timestamp }
+    );
   };
 };

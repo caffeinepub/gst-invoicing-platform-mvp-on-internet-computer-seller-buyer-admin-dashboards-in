@@ -1,231 +1,47 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 11,
-  "summary": "Add a standalone, browser-ready (no-framework) HTML/CSS/Vanilla JS frontend UI for the “GST Return Filing and B2B Invoice Management System”, including login, dashboard, invoice management, and GST return filing pages, with responsive government/finance styling and placeholder REST API integration via fetch().",
+  "projectStateVersion": 3,
+  "summary": "Extend the existing “Green Energy Usage Optimizer” app to ingest, process, store, and stream real-time energy readings (solar, appliances, battery, grid) to a React dashboard with low-latency, fault-tolerant updates via WebSockets or SSE, backed by a time-series database and JWT-secured connections.",
+  "architectural_notes": [
+    "Real-time transport will be WebSockets (ws://api/energy/live) or Server-Sent Events (GET /api/energy/stream), selected per backend capabilities.",
+    "Backend validates and normalizes sensor/external API readings before storage and streaming to clients.",
+    "Time-series capable datastore required (e.g., PostgreSQL + TimescaleDB or MongoDB time-series).",
+    "JWT-based authentication required for real-time connections.",
+    "Frontend uses React hooks/context and a dedicated realTimeService.js to manage connection lifecycle, auto-reconnect, and fallback to REST.",
+    "Optional Redis layer can cache latest readings for low-latency UI updates."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "IF-1",
-      "title": "Motoko backend canister scaffold",
-      "synonyms": [
-        "backend canister",
-        "motoko core"
-      ],
-      "description": "Core backend canister setup (main.mo) with supporting modules and build/deploy configuration for ICP.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-2",
-      "title": "Role-based access control (RBAC) authorization layer",
-      "synonyms": [
-        "authorization mixin",
-        "access control"
-      ],
-      "description": "Authorization modules providing role/permission checks and guards for backend methods (authorization/MixinAuthorization.mo and access-control.mo).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-3",
-      "title": "React (Vite) frontend scaffold with app layout",
-      "synonyms": [
-        "frontend app shell",
-        "AppLayout"
-      ],
-      "description": "Frontend application shell including topbar/sidebar navigation and routing structure (AppLayout, Topbar, SidebarNav, App.tsx).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-4",
-      "title": "Internet Identity authentication flow",
-      "synonyms": [
-        "II login",
-        "auth screens"
-      ],
-      "description": "Internet Identity integration with login/profile setup flow and client actor hooks (LoginScreen, ProfileSetupModal, useInternetIdentity, useActor, useCurrentUser).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-5",
-      "title": "Frontend route guarding and access denied handling",
-      "synonyms": [
-        "RoleGuard",
-        "access denied screen"
-      ],
-      "description": "Client-side route protection and access denied UX using RoleGuard and AccessDeniedScreen.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-6",
-      "title": "Admin dashboards and role management UI",
-      "synonyms": [
-        "admin pages",
-        "role management"
-      ],
-      "description": "Admin pages including AdminDashboardPage and RoleManagementPage for managing roles/access.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-7",
-      "title": "Audit log page",
-      "synonyms": [
-        "audit logging UI"
-      ],
-      "description": "Frontend page for viewing audit activity (AuditLogPage).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-8",
-      "title": "Invoice management module (list/detail/create-edit)",
-      "synonyms": [
-        "invoices"
-      ],
-      "description": "Invoice list, detail, and create/edit pages plus buyer verification panel components.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-9",
-      "title": "Inventory management and low-stock alerts",
-      "synonyms": [
-        "inventory",
-        "low stock"
-      ],
-      "description": "Inventory tracking page and low stock alerts page.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-10",
-      "title": "GST returns module",
-      "synonyms": [
-        "GST returns"
-      ],
-      "description": "GST returns page and GST utility helpers.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-11",
-      "title": "Buyer and seller dashboards",
-      "synonyms": [
-        "dashboards"
-      ],
-      "description": "Dedicated dashboard pages for buyer and seller roles.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-12",
-      "title": "Shared UI component library (shadcn-ui) integrated",
-      "synonyms": [
-        "UI kit",
-        "shadcn components"
-      ],
-      "description": "Integrated shadcn-ui component set and styling/tooling (Tailwind, component definitions) used across the frontend.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-13",
-      "title": "Build template and deployment tooling",
-      "synonyms": [
-        "build-template",
-        "dockerfile",
-        "deploy scripts"
-      ],
-      "description": "Project build template including Dockerfile, deploy script, ICP yaml/canister configs, and image processing scripts (prune/resize).",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-14",
-      "title": "Generated brand assets for GST ledger",
-      "synonyms": [
-        "generated images",
-        "logo/icon"
-      ],
-      "description": "Generated PNG assets for GST ledger icon/logo under frontend/public/assets/generated.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "IF-15",
-      "title": "Invoice payments UI and data hooks",
-      "synonyms": [
-        "payments",
-        "invoice payment panel"
-      ],
-      "description": "Added frontend payments support including an InvoicePaymentPanel component and a usePayments data hook (with shared query utilities) to handle invoice-related payment interactions.",
-      "reqIds": [],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-standalone-browser-runnable-no-build-step-frontend-ui-implemented-with-plain-html5-css3-flexbox-grid-vanilla-javascript-es6-that-can-be-opened-directly-via-file-by-opening-its-index-html-without-using-any-frameworks-or-libraries",
-      "title": "Add a standalone, browser-runnable (no-build-step) frontend UI implemented with plain HTML5 + CSS3 (Flexbox/Grid) + Vanilla JavaScript (ES6) that can be opened directly via file:// by opening its index.html, without using any frameworks or libraries.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-the-login-page-in-the-standalone-ui-with-username-password-fields-a-login-button-client-side-validation-and-dynamically-displayed-error-success-messages-on-successful-validation-simulate-login-state-in-the-browser-e-g-in-memory-and-or-localstorage-and-navigate-to-the-dashboard-view",
-      "title": "Implement the Login page in the standalone UI with username + password fields, a Login button, client-side validation, and dynamically displayed error/success messages. On successful validation, simulate login state in the browser (e.g., in-memory and/or localStorage) and navigate to the Dashboard view.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-the-dashboard-page-in-the-standalone-ui-with-a-navigation-bar-containing-dashboard-invoices-gst-returns-and-logout-show-summary-cards-for-total-invoices-gst-payable-and-filing-status-in-a-professional-clean-card-based-layout",
-      "title": "Implement the Dashboard page in the standalone UI with a navigation bar containing Dashboard, Invoices, GST Returns, and Logout. Show summary cards for Total Invoices, GST Payable, and Filing Status in a professional, clean card-based layout.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-the-invoice-management-page-in-the-standalone-ui-with-1-a-form-to-add-invoice-details-and-2-a-table-listing-invoices-include-ui-only-view-and-delete-buttons-in-each-row-delete-removes-the-row-from-the-ui-state-view-opens-an-in-page-modal-panel-or-dedicated-view-section-showing-the-invoice-details-ui-only",
-      "title": "Implement the Invoice Management page in the standalone UI with (1) a form to add invoice details and (2) a table listing invoices. Include UI-only View and Delete buttons in each row; Delete removes the row from the UI state. View opens an in-page modal/panel or dedicated view section showing the invoice details (UI only).",
+      "id": "feature-frontend-create-a-dedicated-real-time-client-service-in-typescript-that-attempts-to-connect-to-a-live-stream-endpoint-websocket-ws-api-energy-live-or-sse-get-api-energy-stream-when-available-and-otherwise-falls-back-to-incremental-polling-against-the-backend-live-read-apis-the-service-must-manage-the-connection-lifecycle-auto-reconnect-with-backoff-throttling-of-ui-updates-and-error-recovery",
+      "title": "Frontend: Create a dedicated real-time client service (in TypeScript) that attempts to connect to a live stream endpoint (WebSocket: ws://api/energy/live OR SSE: GET /api/energy/stream) when available, and otherwise falls back to incremental polling against the backend live-read APIs; the service must manage the connection lifecycle, auto-reconnect with backoff, throttling of UI updates, and error recovery.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-the-gst-return-page-in-the-standalone-ui-with-a-simple-form-that-simulates-gst-return-filing-and-shows-a-status-message-after-submission",
-      "title": "Implement the GST Return page in the standalone UI with a simple form that simulates GST return filing and shows a status message after submission.",
+      "id": "feature-frontend-add-shared-live-telemetry-state-react-context-hooks-that-exposes-a-latest-readings-b-a-rolling-average-per-metric-over-a-short-window-c-connection-status-live-disconnected-and-d-data-freshness-timestamps-integrate-it-into-existing-authenticated-routes-pages",
+      "title": "Frontend: Add shared live-telemetry state (React context + hooks) that exposes (a) latest readings, (b) a rolling average per metric over a short window, (c) connection status (LIVE/DISCONNECTED), and (d) data freshness timestamps; integrate it into existing authenticated routes/pages.",
       "reqIds": [
         "REQ-5"
       ],
       "version": 1
     },
     {
-      "id": "feature-apply-a-professional-government-finance-style-visual-design-across-the-standalone-ui-using-a-blue-white-gray-color-palette-with-responsive-layout-desktop-mobile-consistent-typography-spacing-and-card-based-ui-patterns",
-      "title": "Apply a professional government/finance-style visual design across the standalone UI using a blue/white/gray color palette with responsive layout (desktop + mobile), consistent typography, spacing, and card-based UI patterns.",
+      "id": "feature-frontend-update-the-energy-consumption-module-consumption-solar-allocation-analysis-module-solar-analysis-and-cost-estimation-module-cost-estimation-to-display-live-updating-values-status-indicators-live-disconnected-and-clear-data-freshness-timestamps-with-smooth-transitions-for-value-changes-keep-existing-loading-error-empty-states-compatible",
+      "title": "Frontend: Update the Energy Consumption module (/consumption), Solar Allocation & Analysis module (/solar-analysis), and Cost Estimation module (/cost-estimation) to display live-updating values, status indicators (LIVE/DISCONNECTED), and clear data-freshness timestamps, with smooth transitions for value changes; keep existing loading/error/empty states compatible.",
       "reqIds": [
         "REQ-6"
       ],
       "version": 1
     },
     {
-      "id": "feature-in-the-standalone-script-js-implement-form-validation-and-dom-manipulation-using-clearly-separated-functions-and-include-fetch-calls-to-placeholder-rest-api-urls-for-login-invoice-list-add-delete-and-gst-filing-handle-failures-gracefully-and-fall-back-to-local-demo-state-if-running-via-file-causes-cors-network-errors",
-      "title": "In the standalone script.js, implement form validation and DOM manipulation using clearly separated functions, and include fetch() calls to placeholder REST API URLs for login, invoice list/add/delete, and GST filing (handle failures gracefully and fall back to local demo state if running via file:// causes CORS/network errors).",
+      "id": "feature-frontend-add-lightweight-logging-hooks-for-real-time-ingestion-streaming-health-connect-disconnect-events-retry-counts-last-message-time-and-error-reasons-and-ensure-logs-do-not-expose-jwts-or-sensitive-user-data",
+      "title": "Frontend: Add lightweight logging hooks for real-time ingestion/streaming health (connect/disconnect events, retry counts, last message time, and error reasons) and ensure logs do not expose JWTs or sensitive user data.",
       "reqIds": [
         "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-provide-a-folder-structure-description-as-developer-facing-comments-in-the-files-and-or-a-small-readme-in-the-standalone-folder-and-ensure-the-code-is-clean-readable-and-well-commented",
-      "title": "Provide a folder structure description (as developer-facing comments in the files and/or a small README in the standalone folder) and ensure the code is clean, readable, and well-commented.",
-      "reqIds": [
-        "REQ-8"
       ],
       "version": 1
     }
@@ -233,40 +49,79 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Standalone no-framework frontend UI (index.html/style.css/script.js) with login, dashboard, invoice management, and GST return pages; responsive blue/white/gray finance styling; client-side validation; dynamic messages; placeholder fetch() REST calls",
+      "summary": "Implement backend real-time streaming endpoint (WebSocket or SSE) for live energy readings",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Backend pipeline to validate, normalize, and persist incoming sensor/API energy data to a time-series capable database",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "JWT authentication and authorization for real-time connections (WebSocket/SSE)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Reliability features for streaming: reconnection handling, throttling, error recovery, graceful degradation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Frontend realTimeService.js (WebSocket/EventSource) with lifecycle management, auto-reconnect, and REST fallback",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update UI modules (Energy Consumption, Solar Allocation & Analysis, Cost Estimation) to render live charts, rolling averages, and LIVE/DISCONNECTED indicators",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Add optional Redis cache for latest readings to reduce latency and load",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Add logging/monitoring hooks for real-time ingestion and streaming health",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Backend: Add an authenticated ingestion API for incoming real-time energy readings from sensors/external energy APIs, including validation and normalization for these metrics: appliance power usage (Watts), solar generation (kW), battery charge level (%), and grid import/export.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Backend: Persist and serve time-ordered energy readings in the single Motoko actor (backend/main.mo), providing query methods to fetch (a) the latest reading per metric and (b) incremental updates since a provided timestamp (or cursor) to support low-latency UI updates and fault-tolerant recovery after disconnects.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Backend: Implement authorization checks suitable for real-time consumers, using the existing authenticated session model (frontend stores the token under localStorage key \"auth_token\") and ensuring only authenticated users can access live readings APIs.",
+      "reqIds": [
+        "REQ-3"
+      ],
       "status": "pending"
     }
   ],
-  "architecturalNotes": [
-    "Backend is implemented as an ICP Motoko canister with a dedicated authorization layer (mixin/access-control modules).",
-    "Frontend is a React + Vite + TypeScript app using Tailwind and shadcn-ui components.",
-    "Authentication is via Internet Identity; frontend includes hooks/utilities to create authenticated actors for backend calls.",
-    "Authorization is role-based; client-side route guards (RoleGuard) complement backend authorization checks.",
-    "Project includes reusable build/deploy templates (Dockerfile, deploy.sh, canister.yaml) and scripts for asset resizing/pruning.",
-    "Frontend now includes a payments data layer (usePayments) built on shared query utilities (useQueries) and polling configuration to standardize backend fetching behavior.",
-    "Frontend deliverable requested as a framework-free, browser-runnable bundle (HTML5 + CSS3 Grid/Flexbox + Vanilla JS ES6) with separate index.html, style.css, and script.js, using fetch() against placeholder REST API URLs."
-  ],
-  "knownIssues": [],
-  "isFixRequest": false,
-  "generatedImages": [
-    {
-      "filename": "frontend/public/assets/generated/gst-ledger-icon.dim_256x256.png",
-      "description": "Generated GST ledger icon (256x256).",
-      "targetWidth": 256,
-      "targetHeight": 256
-    },
-    {
-      "filename": "frontend/public/assets/generated/gst-ledger-logo.dim_512x512.png",
-      "description": "Generated GST ledger logo (512x512).",
-      "targetWidth": 512,
-      "targetHeight": 512
-    }
-  ],
   "gameProjectType": "none",
-  "projectName": "GST Return Filing and B2B Invoice Management System",
+  "projectName": "Green Energy Usage Optimizer",
   "clarification_mode": "instant",
-  "clarification_rounds": 0,
-  "requiresBackendChanges": false,
-  "requiresFrontendChanges": true
+  "clarification_rounds": 0
 }

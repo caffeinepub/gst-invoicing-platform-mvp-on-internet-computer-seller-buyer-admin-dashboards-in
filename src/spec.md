@@ -1,15 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Add a standalone, no-build-step vanilla HTML/CSS/JS UI demo for GST Returns and B2B Invoice management that runs by opening `index.html` directly (via `file://`) without affecting the existing React/Vite app.
+**Goal:** Add authenticated ingestion of live energy readings and enable near-real-time, fault-tolerant live updates across the dashboard with streaming when possible and polling fallback.
 
 **Planned changes:**
-- Add a new standalone folder containing `index.html`, `style.css`, and `script.js` (plus an optional small README) that runs directly in a browser with no frameworks/libraries.
-- Implement a Login view with username/password inputs, client-side validation, dynamic error/success messages, and simulated login state (optionally persisted) that transitions to the Dashboard.
-- Implement a single-page-style Dashboard view with nav (Dashboard, Invoices, GST Returns, Logout) and summary cards (Total Invoices, GST Payable, Filing Status) that reflect demo state updates.
-- Implement an Invoice Management view with an add-invoice form (validated), an invoices table, and UI-only View (modal/panel/section) and Delete actions that update in-browser state immediately.
-- Implement a GST Return view with a simple filing form, client-side validation, and dynamic status messaging that updates the Dashboard filing status.
-- Apply a responsive, professional government/finance visual design (blue/white/gray palette) with consistent typography, spacing, and card-based UI patterns.
-- In `script.js`, structure logic into clear functions for validation/rendering/state changes and include `fetch()` calls to placeholder REST endpoints (login/invoices/GST filing) with graceful fallback when requests fail (e.g., due to `file://` CORS/offline).
+- Add an authenticated backend ingestion API to accept, validate, normalize, and store incoming readings for appliance power (W), solar generation (kW), battery charge (%), and grid import/export.
+- Persist time-ordered readings in the existing single Motoko actor and expose queries for (a) latest values (single response) and (b) incremental updates since a timestamp/cursor with bounded payload size.
+- Centralize backend authorization so only authenticated users (token from `localStorage["auth_token"]`) can ingest or query live readings.
+- Implement a frontend real-time client service that prefers a stream endpoint (WS or SSE when available) and otherwise falls back to incremental polling; manage reconnect/backoff, recovery via last-seen cursor, and throttled/batched UI updates.
+- Add shared React live-telemetry state (context + hooks) providing latest readings, rolling averages, connection status (LIVE/DISCONNECTED), and last-updated timestamps.
+- Update `/consumption`, `/solar-analysis`, and `/cost-estimation` to show live-updating values, LIVE/DISCONNECTED indicator, and data freshness timestamps with smooth value transitions while keeping existing loading/error/empty states and manual “Fetch Data” as fallback.
+- Add lightweight, configurable frontend logging for connection health/events and errors without exposing JWTs or sensitive data.
 
-**User-visible outcome:** Users can open the standalone `index.html` directly in a browser, log in to a demo dashboard, add/view/delete invoices, simulate GST return filing, and see summary metrics update—all in a clean, responsive UI without any external libraries.
+**User-visible outcome:** Authenticated users see energy metrics update automatically on the Consumption, Solar Analysis, and Cost Estimation pages with a LIVE/DISCONNECTED status and “Last updated” timestamps; if streaming isn’t available or disconnects occur, the UI recovers using polling and existing manual fetch flows.

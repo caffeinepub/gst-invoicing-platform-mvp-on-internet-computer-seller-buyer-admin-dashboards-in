@@ -1,169 +1,182 @@
 {
   "kind": "build_request",
-  "title": "Add standalone vanilla HTML/CSS/JS UI demo for GST Returns + B2B Invoicing",
+  "title": "Add live energy readings ingestion + near-real-time dashboard updates with authenticated streaming/polling",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a standalone, browser-runnable (no-build-step) frontend UI implemented with plain HTML5 + CSS3 (Flexbox/Grid) + Vanilla JavaScript (ES6) that can be opened directly via file:// by opening its index.html, without using any frameworks or libraries.",
-      "target": "frontend",
+      "text": "Backend: Add an authenticated ingestion API for incoming real-time energy readings from sensors/external energy APIs, including validation and normalization for these metrics: appliance power usage (Watts), solar generation (kW), battery charge level (%), and grid import/export.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Must run directly in a web browser without frameworks",
-          "Must work by simply opening index.html in a web browser",
-          "Provide three separate files: index.html, style.css, script.js"
+          "Sensors / external APIs push live energy readings",
+          "Backend validates, normalizes, and stores data",
+          "Stream: Appliance power usage (Watts) / Solar generation (kW) / Battery charge level (%) / Grid import/export",
+          "Validate incoming sensor data"
         ]
       },
       "acceptanceCriteria": [
-        "A new standalone folder exists in the repo containing exactly index.html, style.css, and script.js (and any optional subfolders for organization if needed), and the UI works when index.html is opened directly in a browser via file://",
-        "No external JS/CSS libraries or frameworks are referenced (no React/Vue/Angular, no Tailwind, no Bootstrap, no CDN component libraries)"
+        "Backend rejects malformed readings with a clear error (no traps) and does not persist invalid data.",
+        "Backend normalizes units/fields into a single canonical reading shape before storing/serving.",
+        "Ingestion is protected so unauthenticated callers cannot submit readings."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement the Login page in the standalone UI with username + password fields, a Login button, client-side validation, and dynamically displayed error/success messages. On successful validation, simulate login state in the browser (e.g., in-memory and/or localStorage) and navigate to the Dashboard view.",
-      "target": "frontend",
+      "text": "Backend: Persist and serve time-ordered energy readings in the single Motoko actor (backend/main.mo), providing query methods to fetch (a) the latest reading per metric and (b) incremental updates since a provided timestamp (or cursor) to support low-latency UI updates and fault-tolerant recovery after disconnects.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Login Page - Username and password input fields - Login button - Client-side validation - Error and success messages displayed dynamically"
+          "Replace static or batch data with real-time streaming data",
+          "Ensure low latency, fault tolerance, and scalability",
+          "Backend validates, normalizes, and stores data",
+          "Throttling and error recovery",
+          "Reconnection handling"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting empty/invalid fields shows inline or panel errors without reloading the page",
-        "Submitting valid inputs shows a success message and transitions to the Dashboard view",
-        "Refreshing after a successful login preserves login state (or explicitly logs out if the demo chooses not to persist, but behavior must be consistent and documented in comments)"
+        "There is a query that returns the latest known values for all four metric groups in a single response.",
+        "There is a query that returns readings since a client-provided timestamp/cursor, ordered by time, with a bounded maximum payload size (throttling).",
+        "Client can resume after a disconnect by calling the incremental query with its last-seen timestamp/cursor without losing ordering."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement the Dashboard page in the standalone UI with a navigation bar containing Dashboard, Invoices, GST Returns, and Logout. Show summary cards for Total Invoices, GST Payable, and Filing Status in a professional, clean card-based layout.",
-      "target": "frontend",
+      "text": "Backend: Implement authorization checks suitable for real-time consumers, using the existing authenticated session model (frontend stores the token under localStorage key \"auth_token\") and ensuring only authenticated users can access live readings APIs.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Dashboard Page - Navigation bar (Dashboard, Invoices, GST Returns, Logout) - Summary cards (Total Invoices, GST Payable, Filing Status) - Professional, clean layout"
+          "Authenticate real-time connections using JWT",
+          "Authentication for socket connections"
         ]
       },
       "acceptanceCriteria": [
-        "Nav items switch views without full page reload (single-page style DOM updates are acceptable)",
-        "Summary cards render with realistic placeholder values and update when invoices/returns are added in the demo"
+        "Unauthenticated access to live readings APIs fails with a clear unauthorized error.",
+        "Authenticated access succeeds consistently for live readings queries.",
+        "Authorization checks are centralized and consistently applied across ingestion and live-read APIs."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement the Invoice Management page in the standalone UI with (1) a form to add invoice details and (2) a table listing invoices. Include UI-only View and Delete buttons in each row; Delete removes the row from the UI state. View opens an in-page modal/panel or dedicated view section showing the invoice details (UI only).",
+      "text": "Frontend: Create a dedicated real-time client service (in TypeScript) that attempts to connect to a live stream endpoint (WebSocket: ws://api/energy/live OR SSE: GET /api/energy/stream) when available, and otherwise falls back to incremental polling against the backend live-read APIs; the service must manage the connection lifecycle, auto-reconnect with backoff, throttling of UI updates, and error recovery.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Invoice Management Page - Form to add invoice details - Table to display invoice list - Buttons for View / Delete (UI only)"
+          "Create a real-time endpoint: ws://api/energy/live OR GET /api/energy/stream",
+          "Create a dedicated real-time service: realTimeService.js",
+          "Handle: Connection lifecycle / Auto-reconnect / Fallback to REST if stream fails",
+          "Throttling and error recovery"
         ]
       },
       "acceptanceCriteria": [
-        "Invoice form validates required fields client-side and shows dynamic validation messages",
-        "Adding an invoice appends it to the table immediately without reloading",
-        "Delete removes the invoice from the table/state",
-        "View displays the selected invoice details in a readable layout"
+        "Real-time service attaches the JWT from localStorage(\"auth_token\") to the stream connection (SSE header or WS token mechanism) and to fallback HTTP requests.",
+        "If the stream fails to connect or drops, the service transitions to DISCONNECTED and retries with exponential backoff; on recovery it resumes using last-seen timestamp/cursor.",
+        "If both stream and live polling fail, the UI continues to function using existing REST fetch flows (e.g., fetchConsumption/fetchSolarAnalysis/fetchCostEstimation) without crashing.",
+        "Update emission to UI is throttled/batched so rapid incoming readings do not cause excessive re-renders."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Implement the GST Return page in the standalone UI with a simple form that simulates GST return filing and shows a status message after submission.",
+      "text": "Frontend: Add shared live-telemetry state (React context + hooks) that exposes (a) latest readings, (b) a rolling average per metric over a short window, (c) connection status (LIVE/DISCONNECTED), and (d) data freshness timestamps; integrate it into existing authenticated routes/pages.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "GST Return Page - Simple form to simulate GST return filing - Status message after submission"
+          "Frontend: React (hooks, context)",
+          "Display: Live charts / Rolling averages / Status indicators (LIVE / DISCONNECTED)",
+          "Timestamped readings",
+          "Visual indicators for data freshness"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting the GST return form performs client-side validation and shows a clear success/error status message dynamically",
-        "Filing status reflected on the Dashboard summary card (at least as a demo state update)"
+        "Components can subscribe to live readings via a hook without prop-drilling.",
+        "Connection status is available globally to energy module pages and updates immediately on connect/disconnect.",
+        "Rolling averages are computed client-side from the recent reading window and exposed in the same hook/context.",
+        "Each metric group includes a last-updated timestamp that the UI can render."
       ]
     },
     {
       "id": "REQ-6",
-      "text": "Apply a professional government/finance-style visual design across the standalone UI using a blue/white/gray color palette with responsive layout (desktop + mobile), consistent typography, spacing, and card-based UI patterns.",
+      "text": "Frontend: Update the Energy Consumption module (/consumption), Solar Allocation & Analysis module (/solar-analysis), and Cost Estimation module (/cost-estimation) to display live-updating values, status indicators (LIVE/DISCONNECTED), and clear data-freshness timestamps, with smooth transitions for value changes; keep existing loading/error/empty states compatible.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Professional government/finance-style UI",
-          "Blue, white, and gray color palette",
-          "Responsive design for desktop and mobile",
-          "Proper spacing, typography, and card-based layout"
+          "Update UI in: Energy Consumption Module / Solar Allocation & Analysis Module / Cost Estimation Module",
+          "Live-updating graphs (no refresh)",
+          "Status indicators (LIVE / DISCONNECTED)",
+          "Visual indicators for data freshness",
+          "Smooth transitions for value changes"
         ]
       },
       "acceptanceCriteria": [
-        "UI is responsive and usable on narrow widths (e.g., stacked cards, collapsible/stacked nav layout)",
-        "Consistent spacing/typography hierarchy (headings, labels, inputs, tables, buttons) across all views",
-        "Color palette is predominantly blue/white/gray"
+        "Each of the three pages shows a LIVE/DISCONNECTED badge and a “Last updated” timestamp.",
+        "When live data is available, headline metrics update automatically without requiring the user to click “Fetch Data”.",
+        "Transitions for changing numeric values are visually smooth (no abrupt jumps), and stale data is visually indicated when disconnected.",
+        "Existing manual “Fetch Data” behavior still works as a fallback and does not conflict with live updates."
       ]
     },
     {
       "id": "REQ-7",
-      "text": "In the standalone script.js, implement form validation and DOM manipulation using clearly separated functions, and include fetch() calls to placeholder REST API URLs for login, invoice list/add/delete, and GST filing (handle failures gracefully and fall back to local demo state if running via file:// causes CORS/network errors).",
+      "text": "Frontend: Add lightweight logging hooks for real-time ingestion/streaming health (connect/disconnect events, retry counts, last message time, and error reasons) and ensure logs do not expose JWTs or sensitive user data.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "Handle form validation",
-          "DOM manipulation for dynamic updates",
-          "Use fetch() with placeholder REST API URLs",
-          "Separate logic clearly using functions"
+          "Logging and monitoring hooks",
+          "Graceful degradation on network loss"
         ]
       },
       "acceptanceCriteria": [
-        "script.js is structured into readable functions (e.g., validateLoginForm, renderInvoicesTable, handleGstSubmit, apiRequest) with clear comments",
-        "fetch() is used with clearly marked placeholder endpoints (not real keys/secrets), and the UI still functions as a demo when the requests fail (e.g., offline/file:// mode)"
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Provide a folder structure description (as developer-facing comments in the files and/or a small README in the standalone folder) and ensure the code is clean, readable, and well-commented.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Provide a folder structure",
-          "Code must be clean, readable, and well-commented"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The standalone folder contains a brief explanation of how to run (open index.html) and what each file does",
-        "HTML/CSS/JS includes comments explaining key sections and non-obvious logic"
+        "Real-time service emits structured, non-sensitive logs for connection lifecycle events.",
+        "Errors include actionable reasons (e.g., unauthorized, network error, parse error) without printing tokens.",
+        "Logs can be disabled or reduced in production builds via a simple configuration flag."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any paths listed as immutable in SYSTEM_CONTEXT (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "Do not replace or remove the existing React/Vite application entry at frontend/index.html; add the standalone vanilla UI as new files in a separate folder so it can be opened directly without impacting the existing app."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not modify files under frontend/src/components/ui (read-only).",
+    "Do not edit frontend immutable hook files (frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx).",
+    "Use English for any user-facing text.",
+    "Respect platform limitations: do not require Node.js/Spring Boot servers, external databases (PostgreSQL/TimescaleDB/MongoDB), Redis, WebSockets infrastructure, or third-party monitoring services to be provisioned by this project."
   ],
   "nonGoals": [
-    "Do not implement real authentication against Internet Identity for the standalone vanilla UI (this demo is separate and uses simulated client-side login state).",
-    "Do not add or require any backend changes in Motoko for this request.",
-    "Do not introduce any external libraries/frameworks (including Tailwind, shadcn-ui, React) into the standalone vanilla UI."
+    "Implementing TimescaleDB/PostgreSQL/MongoDB storage or Redis caching (not supported in this environment).",
+    "Implementing a true WebSocket server in the backend canister if the platform runtime does not support it; polling-based near-real-time is acceptable as the fallback.",
+    "Adding third-party authentication providers; keep the current authentication approach and token storage model.",
+    "Building a full observability/monitoring stack beyond lightweight internal logging hooks."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

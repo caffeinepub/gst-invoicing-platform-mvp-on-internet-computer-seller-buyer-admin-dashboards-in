@@ -1,194 +1,132 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Standalone vanilla UI demo for GST Returns + B2B Invoicing (file:// runnable)",
+  "title": "Near-real-time live telemetry client, shared state, and UI integration for energy modules",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Create a standalone no-build-step vanilla HTML/CSS/JS UI runnable directly via file:// with no external libraries.",
-      "acceptanceCriteria": [
-        "A new standalone folder exists in the repo containing exactly index.html, style.css, and script.js (and any optional subfolders for organization if needed), and the UI works when index.html is opened directly in a browser via file://",
-        "No external JS/CSS libraries or frameworks are referenced (no React/Vue/Angular, no Tailwind, no Bootstrap, no CDN component libraries)"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/standalone-gst-demo/index.html",
-          "operation": "create",
-          "description": "Create the standalone HTML entry that can run from file:// and references only local ./style.css and ./script.js; include developer-facing comments describing the folder purpose and how to run (open this file in a browser)."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/style.css",
-          "operation": "create",
-          "description": "Create standalone CSS (Flexbox/Grid) for the demo UI; ensure no external imports; include developer-facing comments describing the file's role."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "create",
-          "description": "Create standalone ES6 JavaScript that boots the SPA-style view switching and demo state management with no dependencies; include developer-facing comments describing the file's role."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Implement a Login view with validation, dynamic status messages, simulated login state persistence, and navigation to Dashboard on success.",
-      "acceptanceCriteria": [
-        "Submitting empty/invalid fields shows inline or panel errors without reloading the page",
-        "Submitting valid inputs shows a success message and transitions to the Dashboard view",
-        "Refreshing after a successful login preserves login state (or explicitly logs out if the demo chooses not to persist, but behavior must be consistent and documented in comments)"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/standalone-gst-demo/index.html",
-          "operation": "modify",
-          "description": "Add the Login view DOM structure (username/password inputs, login button, message area) and a single app container for SPA-style rendering without page reload."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "modify",
-          "description": "Implement login view rendering, client-side validation, dynamic success/error messaging, simulated auth state (localStorage and in-memory), and post-login navigation to the Dashboard; document the chosen persistence behavior in comments."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/style.css",
-          "operation": "modify",
-          "description": "Style the Login view with consistent form layout, input states, validation messaging, and responsive behavior consistent with the overall finance-style UI."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Implement a Dashboard view with SPA navigation (Dashboard/Invoices/GST Returns/Logout) and summary cards that reflect demo state.",
-      "acceptanceCriteria": [
-        "Nav items switch views without full page reload (single-page style DOM updates are acceptable)",
-        "Summary cards render with realistic placeholder values and update when invoices/returns are added in the demo"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/standalone-gst-demo/index.html",
-          "operation": "modify",
-          "description": "Add the shared navigation bar structure and the Dashboard view section (or mount points) for rendering summary cards and view content areas."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "modify",
-          "description": "Implement SPA-style navigation (no full reload), Dashboard rendering, Logout behavior (clears simulated login state), and computed summary values that update based on the invoices list and GST filing status in demo state."
-        },
-        {
-          "path": "frontend/standalone-gst-demo/style.css",
-          "operation": "modify",
-          "description": "Style the navigation bar and Dashboard cards using a clean card-based layout; include responsive rules for stacked nav/cards on mobile widths."
-        }
-      ]
-    },
-    {
       "id": "REQ-4",
-      "summary": "Implement Invoice Management view with an add-invoice form, invoice table, and UI-only View/Delete actions (View shows details in modal/panel; Delete updates state).",
+      "summary": "Implement a dedicated real-time telemetry client service with streaming-first and polling fallback, including lifecycle management, reconnect backoff, throttled updates, and recovery.",
       "acceptanceCriteria": [
-        "Invoice form validates required fields client-side and shows dynamic validation messages",
-        "Adding an invoice appends it to the table immediately without reloading",
-        "Delete removes the invoice from the table/state",
-        "View displays the selected invoice details in a readable layout"
+        "Real-time service attaches the JWT from localStorage(\"auth_token\") to the stream connection (SSE header or WS token mechanism) and to fallback HTTP requests.",
+        "If the stream fails to connect or drops, the service transitions to DISCONNECTED and retries with exponential backoff; on recovery it resumes using last-seen timestamp/cursor.",
+        "If both stream and live polling fail, the UI continues to function using existing REST fetch flows (e.g., fetchConsumption/fetchSolarAnalysis/fetchCostEstimation) without crashing.",
+        "Update emission to UI is throttled/batched so rapid incoming readings do not cause excessive re-renders."
       ],
       "file_operations": [
         {
-          "path": "frontend/standalone-gst-demo/index.html",
+          "path": "frontend/src/config/polling.ts",
           "operation": "modify",
-          "description": "Add the Invoice Management view structure including: invoice form area, invoices table area, and an in-page modal/panel container for invoice detail viewing."
+          "description": "Define polling/streaming configuration (poll interval, max payload strategy, throttle window, exponential backoff bounds, jitter) for the real-time telemetry service."
         },
         {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "modify",
-          "description": "Implement invoice form validation and submission to local demo state, dynamic table rendering, row-level View/Delete handlers, and an in-page modal/panel renderer for invoice details (UI only)."
+          "path": "frontend/src/services/realTimeEnergyService.ts",
+          "operation": "create",
+          "description": "Create a TypeScript real-time client that (1) attempts SSE/WS connection to the configured live stream URL when available, (2) falls back to incremental polling using authenticated calls, (3) manages connect/disconnect lifecycle, auto-reconnect with exponential backoff, cursor-based recovery using last-seen timestamp, and (4) throttles/batches emissions to subscribers. Use the authorization component’s token storage model (auth_token in localStorage) to attach auth without exposing the token in logs. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/standalone-gst-demo/style.css",
-          "operation": "modify",
-          "description": "Style invoice form controls, table layout, row actions, and the invoice details modal/panel with accessible spacing/typography and responsive behavior."
+          "path": "frontend/src/services/liveReadingsApi.ts",
+          "operation": "create",
+          "description": "Add a small API wrapper that fetches latest readings and incremental readings since a timestamp/cursor, attaching Authorization from localStorage(\"auth_token\"). Prefer calling the existing canister actor methods when available; keep this wrapper focused on frontend wiring and graceful error mapping (unauthorized/network/parse)."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Implement GST Return view with a simple filing form, dynamic status feedback, and dashboard filing-status updates in demo state.",
+      "summary": "Add shared live-telemetry React context + hooks for latest readings, rolling averages, connection status, and freshness timestamps; integrate into authenticated routes.",
       "acceptanceCriteria": [
-        "Submitting the GST return form performs client-side validation and shows a clear success/error status message dynamically",
-        "Filing status reflected on the Dashboard summary card (at least as a demo state update)"
+        "Components can subscribe to live readings via a hook without prop-drilling.",
+        "Connection status is available globally to energy module pages and updates immediately on connect/disconnect.",
+        "Rolling averages are computed client-side from the recent reading window and exposed in the same hook/context.",
+        "Each metric group includes a last-updated timestamp that the UI can render."
       ],
       "file_operations": [
         {
-          "path": "frontend/standalone-gst-demo/index.html",
-          "operation": "modify",
-          "description": "Add the GST Returns view structure including a simple filing form and a status/message area for submission results."
+          "path": "frontend/src/types/liveTelemetry.ts",
+          "operation": "create",
+          "description": "Define TypeScript types for canonical live readings, per-metric freshness timestamps, rolling window samples, rolling averages, and connection status (LIVE/DISCONNECTED), compatible with the backend’s reading shape."
         },
         {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "modify",
-          "description": "Implement GST return form validation and submission handling, dynamic status messages, and demo state updates that feed into the Dashboard 'Filing Status' summary card."
+          "path": "frontend/src/context/LiveTelemetryContext.tsx",
+          "operation": "create",
+          "description": "Implement LiveTelemetryProvider that subscribes to the real-time service, stores latest readings, maintains a short rolling window for averages, exposes connection status and freshness timestamps, and cleans up on unmount/logout. Use the authorization component’s session/token model (auth_token in localStorage) for authenticated access. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/standalone-gst-demo/style.css",
+          "path": "frontend/src/hooks/useLiveTelemetry.ts",
+          "operation": "create",
+          "description": "Create a hook that returns live telemetry state and derived values (latest per metric, rolling averages, status, freshness timestamps) from LiveTelemetryContext."
+        },
+        {
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Style the GST filing form and status messaging with consistent card/form patterns and responsive layout."
+          "description": "Wire LiveTelemetryProvider into the authenticated area (under ProtectedRoute/AppLayout) so existing authenticated energy routes can access live telemetry without adding new routes."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Apply a professional blue/white/gray finance/government visual design with responsive layout, consistent typography, spacing, and card-based patterns across all views.",
+      "summary": "Update /consumption, /solar-analysis, and /cost-estimation to show live-updating values, LIVE/DISCONNECTED status badges, and last-updated timestamps with smooth value transitions while preserving existing manual fetch flows.",
       "acceptanceCriteria": [
-        "UI is responsive and usable on narrow widths (e.g., stacked cards, collapsible/stacked nav layout)",
-        "Consistent spacing/typography hierarchy (headings, labels, inputs, tables, buttons) across all views",
-        "Color palette is predominantly blue/white/gray"
+        "Each of the three pages shows a LIVE/DISCONNECTED badge and a “Last updated” timestamp.",
+        "When live data is available, headline metrics update automatically without requiring the user to click “Fetch Data”.",
+        "Transitions for changing numeric values are visually smooth (no abrupt jumps), and stale data is visually indicated when disconnected.",
+        "Existing manual “Fetch Data” behavior still works as a fallback and does not conflict with live updates."
       ],
       "file_operations": [
         {
-          "path": "frontend/standalone-gst-demo/style.css",
-          "operation": "modify",
-          "description": "Define a cohesive design system for the standalone demo (CSS variables for palette, typography scale, spacing, borders, shadows), and apply consistent styling for cards, buttons, inputs, tables, nav, and responsive breakpoints."
+          "path": "frontend/src/components/energy/LiveStatusBadge.tsx",
+          "operation": "create",
+          "description": "Add a lightweight energy-module component that renders LIVE/DISCONNECTED status and a freshness/staleness visual state (no changes to frontend/src/components/ui)."
         },
         {
-          "path": "frontend/standalone-gst-demo/index.html",
+          "path": "frontend/src/components/energy/LastUpdatedLabel.tsx",
+          "operation": "create",
+          "description": "Create a small component to render an English “Last updated” timestamp (and optionally “Stale” when disconnected), consuming values from the live telemetry hook."
+        },
+        {
+          "path": "frontend/src/components/energy/AnimatedNumber.tsx",
+          "operation": "create",
+          "description": "Create a small presentational component to animate numeric value changes smoothly (e.g., interpolated count-up over a short duration) to avoid abrupt jumps."
+        },
+        {
+          "path": "frontend/src/pages/energy/ConsumptionPage.tsx",
           "operation": "modify",
-          "description": "Ensure semantic structure and reusable wrapper elements/classes exist to support consistent styling (layout containers, card sections, headings, form groups) across all views."
+          "description": "Integrate useLiveTelemetry to show LIVE/DISCONNECTED badge and last-updated timestamp, and to auto-update headline metrics when live readings are available. Keep the existing Fetch Data button and state handling as a fallback, ensuring manual fetch does not break live updates."
+        },
+        {
+          "path": "frontend/src/pages/energy/SolarAnalysisPage.tsx",
+          "operation": "modify",
+          "description": "Integrate useLiveTelemetry to display status badge and freshness timestamps, and auto-refresh headline values when live readings are available. Preserve existing loading/error/empty/manual Fetch Data behavior."
+        },
+        {
+          "path": "frontend/src/pages/energy/CostEstimationPage.tsx",
+          "operation": "modify",
+          "description": "Integrate useLiveTelemetry to display status badge and freshness timestamps, and smooth transitions for top-level numeric values using AnimatedNumber. Keep manual Fetch Data as a fallback."
         }
       ]
     },
     {
       "id": "REQ-7",
-      "summary": "Structure script.js into clear functions for validation/rendering/handlers and include fetch() calls to placeholder REST URLs with graceful fallback in file:// or offline mode.",
+      "summary": "Add lightweight, configurable, non-sensitive structured logging for real-time telemetry health and errors.",
       "acceptanceCriteria": [
-        "script.js is structured into readable functions (e.g., validateLoginForm, renderInvoicesTable, handleGstSubmit, apiRequest) with clear comments",
-        "fetch() is used with clearly marked placeholder endpoints (not real keys/secrets), and the UI still functions as a demo when the requests fail (e.g., offline/file:// mode)"
+        "Real-time service emits structured, non-sensitive logs for connection lifecycle events.",
+        "Errors include actionable reasons (e.g., unauthorized, network error, parse error) without printing tokens.",
+        "Logs can be disabled or reduced in production builds via a simple configuration flag."
       ],
       "file_operations": [
         {
-          "path": "frontend/standalone-gst-demo/script.js",
-          "operation": "modify",
-          "description": "Refactor/organize code into clearly separated functions for validation, state updates, DOM rendering, and navigation; add an apiRequest wrapper using fetch() to placeholder REST URLs for login/invoice list/add/delete/GST filing, catching network/CORS failures and falling back to local demo state with user-visible messaging."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Add developer-facing folder structure/run instructions and keep HTML/CSS/JS clean, readable, and well-commented (without adding extra files beyond the required three).",
-      "acceptanceCriteria": [
-        "The standalone folder contains a brief explanation of how to run (open index.html) and what each file does",
-        "HTML/CSS/JS includes comments explaining key sections and non-obvious logic"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/standalone-gst-demo/index.html",
-          "operation": "modify",
-          "description": "Add concise developer-facing comments at the top describing the standalone folder structure, how to run via file://, and where each view is defined/rendered."
+          "path": "frontend/src/utils/realtimeLogging.ts",
+          "operation": "create",
+          "description": "Implement a small logger utility that emits structured events (connect/disconnect, retry counts, last message time, error reasons) and redacts sensitive data (never log JWTs, request headers, or user-identifying payloads). Support an on/off (or level) flag via environment/config."
         },
         {
-          "path": "frontend/standalone-gst-demo/style.css",
+          "path": "frontend/src/services/realTimeEnergyService.ts",
           "operation": "modify",
-          "description": "Add comments describing the styling sections (tokens, layout, components, responsive rules) and any non-obvious choices for the finance-style design."
+          "description": "Integrate the logging utility into the real-time service to record lifecycle events, retry attempts, last message times, and categorized error reasons (unauthorized/network/parse/unknown) while ensuring tokens are never logged. Use the authorization component’s token storage model (auth_token in localStorage) safely. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/standalone-gst-demo/script.js",
+          "path": "frontend/src/config/polling.ts",
           "operation": "modify",
-          "description": "Add comments describing state shape, view routing approach, key functions, and how the demo behaves when fetch() fails under file:// (fallback behavior)."
+          "description": "Add a simple configuration flag (or log level) controlling real-time logging verbosity, suitable for reducing or disabling logs in production builds."
         }
       ]
     }

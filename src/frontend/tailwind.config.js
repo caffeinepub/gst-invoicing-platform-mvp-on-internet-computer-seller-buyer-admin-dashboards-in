@@ -41,6 +41,14 @@ export default {
                     DEFAULT: 'oklch(var(--accent) / <alpha-value>)',
                     foreground: 'oklch(var(--accent-foreground))'
                 },
+                success: {
+                    DEFAULT: 'oklch(var(--success) / <alpha-value>)',
+                    foreground: 'oklch(var(--success-foreground))'
+                },
+                warning: {
+                    DEFAULT: 'oklch(var(--warning) / <alpha-value>)',
+                    foreground: 'oklch(var(--warning-foreground))'
+                },
                 popover: {
                     DEFAULT: 'oklch(var(--popover))',
                     foreground: 'oklch(var(--popover-foreground))'
@@ -73,7 +81,9 @@ export default {
                 sm: 'calc(var(--radius) - 4px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+                xs: '0 1px 2px 0 rgba(0,0,0,0.05)',
+                soft: '0 2px 8px rgba(0,0,0,0.08)',
+                card: '0 4px 12px rgba(0,0,0,0.1)'
             },
             keyframes: {
                 'accordion-down': {
